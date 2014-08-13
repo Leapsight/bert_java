@@ -1,17 +1,13 @@
 package org.bert;
 
 import org.bert.Bert.Atom;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
-
 import org.junit.Test;
-import org.junit.Ignore;
-import org.junit.Rule;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
-import org.junit.rules.ExpectedException;
+
 import java.util.Arrays;
-import java.util.Date;
+
+import static org.junit.Assert.assertEquals;
 
 @RunWith(JUnit4.class)
 public class BertEncodeTest {
@@ -67,7 +63,7 @@ public class BertEncodeTest {
 		Bert bert = new Bert();
 		byte[] data = bert.encode(-1.23);
 
-		byte[] fval = { (byte) 131, 99, 45, 49, 46, 50, 51, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 101, 43, 48, 48, 0, 0, 0, 0 };
+		byte[] fval = { (byte) 131, 99, 45, 49, 44, 50, 51, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 101, 43, 48, 48, 0, 0, 0, 0 };
 		assert(Arrays.equals(data, fval));
 	}
 

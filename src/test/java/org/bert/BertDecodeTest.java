@@ -1,17 +1,15 @@
 package org.bert;
 
-import org.bert.Bert.Atom;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
-
 import org.junit.Test;
-import org.junit.Ignore;
-import org.junit.Rule;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
-import org.junit.rules.ExpectedException;
+
+import java.math.BigInteger;
 import java.util.Arrays;
 import java.util.Date;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
 
 @RunWith(JUnit4.class)
 public class BertDecodeTest {
@@ -47,7 +45,7 @@ public class BertDecodeTest {
 
 	@Test
     public void testFloat() throws BertException {
-		byte[] data = { (byte) 131, 99, 45, 49, 46, 50, 50, 57, 57, 57, 57, 57, 57, 57, 57, 57, 57, 57, 57, 57, 57, 56, 50, 50, 52, 101, 43, 48, 48, 0, 0, 0, 0 };
+		byte[] data = { (byte) 131, 70, (byte) 191, (byte) 243, (byte) 174, 20, 122, (byte) 225, 71, (byte) 174 };
 
 		Bert bert = new Bert(data);
 		Object o = bert.getValue();
@@ -222,4 +220,25 @@ public class BertDecodeTest {
 		assertEquals(l0.length(), 1);
 		assertEquals(l0.charAt(0), 30);
 	}
+
+    @Test
+    public void testSmallBigInt() throws BertException {
+        byte[] data = { (byte) 131, 110, 5, 0, 0, (byte) 228, 11, 84, 2 };
+
+        Bert bert = new Bert(data);
+        BigInteger bi = (BigInteger) bert.getValue();
+
+        assertEquals(bi, BigInteger.valueOf(10000000000L));
+    }
+
+    @Test
+    public void testNegativeSmallBigInt() throws BertException {
+        byte[] data = { (byte) 131, 110, 5, 1, 0, (byte) 228, 11, 84, 2 };
+
+        Bert bert = new Bert(data);
+        BigInteger bi = (BigInteger) bert.getValue();
+
+        assertEquals(bi, BigInteger.valueOf(-10000000000L));
+    }
+
 }
