@@ -14,7 +14,7 @@ public class BertEncodeTest {
 
 	@Test
 	public void encodeAtom() throws BertException {
-		Bert.Atom atom = new Bert.Atom("demo");
+		Bert.Atom atom = Bert.Atom.get("demo");
 		Bert bert = new Bert();
 
 		byte[] data = bert.encode(atom);
@@ -70,7 +70,7 @@ public class BertEncodeTest {
 	@Test
 	public void encodeErlangNil() throws BertException {
 		Bert bert = new Bert();
-		byte[] data = bert.encode(new Bert.List());
+		byte[] data = bert.encode(new Bert.List(0));
 
 		byte[] nil = { (byte) 131, 106 };
 		assert(Arrays.equals(data, nil));
@@ -98,8 +98,8 @@ public class BertEncodeTest {
 	@Test
 	public void encodeTuple() throws BertException {
 		Bert bert = new Bert();
-		Bert.Tuple tuple = new Bert.Tuple();
-		tuple.add(new Atom("demo"));
+		Bert.Tuple tuple = new Bert.Tuple(3);
+		tuple.add(Atom.get("demo"));
 		byte[] five = { 5 };
 		tuple.add(five);
 		tuple.add("a");
@@ -113,8 +113,8 @@ public class BertEncodeTest {
 	@Test
 	public void encodeList() throws BertException {
 		Bert bert = new Bert();
-		Bert.List list = new Bert.List();
-		list.add(new Atom("test"));
+		Bert.List list = new Bert.List(4);
+		list.add(Atom.get("test"));
 		list.add(1);
 		list.add("a");
 		byte[] five = { 5 };
@@ -129,14 +129,14 @@ public class BertEncodeTest {
 	@Test
 	public void encodeComplex() throws BertException, java.io.UnsupportedEncodingException {
 		Bert bert = new Bert();
-		Bert.List list = new Bert.List();
+		Bert.List list = new Bert.List(2);
 
-		Bert.Tuple user = new Bert.Tuple();
-		user.add(new Atom("user"));
+		Bert.Tuple user = new Bert.Tuple(2);
+		user.add(Atom.get("user"));
 		user.add("demo".getBytes("UTF-8"));
 
-		Bert.Tuple pass= new Bert.Tuple();
-		pass.add(new Atom("pass"));
+		Bert.Tuple pass= new Bert.Tuple(2);
+		pass.add(Atom.get("pass"));
 		pass.add("12346".getBytes("UTF-8"));
 
 		list.add(user);

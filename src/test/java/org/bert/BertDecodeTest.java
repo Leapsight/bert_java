@@ -57,7 +57,7 @@ public class BertDecodeTest {
 		byte[] data = { (byte) 131, 100, 0, 4, 116, 101, 115, 116 };
 		Bert bert = new Bert(data);
 		Object o = bert.getValue();
-		assertEquals(((Bert.Atom) o).name, "test");
+		assertEquals(((Bert.Atom) o).toString(), "test");
 	}
 
 	@Test
@@ -88,9 +88,9 @@ public class BertDecodeTest {
 		assert(l.get(0) instanceof Bert.Atom);
 		assert(l.get(1) instanceof Bert.Atom);
 		assert(l.get(2) instanceof Bert.Atom);
-		assertEquals(((Bert.Atom) l.get(0)).name, "a");
-		assertEquals(((Bert.Atom) l.get(1)).name, "b");
-		assertEquals(((Bert.Atom) l.get(2)).name, "c");
+		assertEquals(((Bert.Atom) l.get(0)).toString(), "a");
+		assertEquals(((Bert.Atom) l.get(1)).toString(), "b");
+		assertEquals(((Bert.Atom) l.get(2)).toString(), "c");
 	}
 
 	@Test
@@ -104,9 +104,9 @@ public class BertDecodeTest {
 		assert(l.get(0) instanceof Bert.Atom);
 		assert(l.get(1) instanceof Bert.Atom);
 		assert(l.get(2) instanceof Bert.Atom);
-		assertEquals(((Bert.Atom) l.get(0)).name, "a");
-		assertEquals(((Bert.Atom) l.get(1)).name, "b");
-		assertEquals(((Bert.Atom) l.get(2)).name, "c");
+		assertEquals(((Bert.Atom) l.get(0)).toString(), "a");
+		assertEquals(((Bert.Atom) l.get(1)).toString(), "b");
+		assertEquals(((Bert.Atom) l.get(2)).toString(), "c");
 	}
 
 	@Test
@@ -121,9 +121,9 @@ public class BertDecodeTest {
 		assert(l.get(0) instanceof Bert.Atom);
 		assert(l.get(1) instanceof Bert.Atom);
 		assert(l.get(2) instanceof Bert.Atom);
-		assertEquals(((Bert.Atom) l.get(0)).name, "a");
-		assertEquals(((Bert.Atom) l.get(1)).name, "b");
-		assertEquals(((Bert.Atom) l.get(2)).name, "c");
+		assertEquals(((Bert.Atom) l.get(0)).toString(), "a");
+		assertEquals(((Bert.Atom) l.get(1)).toString(), "b");
+		assertEquals(((Bert.Atom) l.get(2)).toString(), "c");
 
 		assert(l.isProper);
 	}
@@ -141,10 +141,10 @@ public class BertDecodeTest {
 		assert(l.get(1) instanceof Bert.Atom);
 		assert(l.get(2) instanceof Bert.Atom);
 		assert(l.get(3) instanceof Bert.Atom);
-		assertEquals(((Bert.Atom) l.get(0)).name, "a");
-		assertEquals(((Bert.Atom) l.get(1)).name, "b");
-		assertEquals(((Bert.Atom) l.get(2)).name, "c");
-		assertEquals(((Bert.Atom) l.get(3)).name, "d");
+		assertEquals(((Bert.Atom) l.get(0)).toString(), "a");
+		assertEquals(((Bert.Atom) l.get(1)).toString(), "b");
+		assertEquals(((Bert.Atom) l.get(2)).toString(), "c");
+		assertEquals(((Bert.Atom) l.get(3)).toString(), "d");
 
 		assert(!l.isProper);
 	}
@@ -201,9 +201,9 @@ public class BertDecodeTest {
 
 		assert(o instanceof Bert.Dict);
 
-		Bert.Atom name = new Bert.Atom("name");
+		Bert.Atom name = Bert.Atom.get("name");
 
-		Bert.Atom age = new Bert.Atom("age");
+		Bert.Atom age = Bert.Atom.get("age");
 
 		Bert.Dict d = (Bert.Dict) o;
 		assertEquals(d.size(), 2);

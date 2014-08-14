@@ -10,32 +10,58 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 public class Bert {
-
     private byte[] mFloatStr = new byte[31];
     private ByteBuffer mBuffer = null;
     private ByteArrayOutputStream bao = null;
     private Object mValue = null;
 
     public static class Atom {
-        public String name;
+        private static HashMap<ByteBuffer, Atom> atomTable = new HashMap<>();
 
-        public Atom(String name) {
-            this.name = name;
+        public static Atom get(byte[] val) {
+            ByteBuffer bytes = ByteBuffer.wrap(val);
+            Atom atom = atomTable.get(bytes);
+
+            if (atom == null) {
+                atom = new Atom(bytes);
+                atomTable.put(bytes, atom);
+            }
+
+            return atom;
+        }
+
+        public static Atom get(String name) {
+            return get(name.getBytes());
+        }
+
+        // predefined Atoms
+        public static Atom BERT = Atom.get("bert");
+        public static Atom TIME = Atom.get("time");
+        public static Atom TRUE = Atom.get("true");
+        public static Atom FALSE = Atom.get("false");
+        public static Atom NIL = Atom.get("nil");
+        public static Atom DICT = Atom.get("dict");
+
+        public final ByteBuffer val;
+
+        private Atom(ByteBuffer val) {
+            this.val = val;
         }
 
         public int hashCode() {
-            return name.hashCode();
+            return val.hashCode();
         }
 
         public boolean equals(Object obj) {
             if (!(obj instanceof Atom)) return false;
-            return name.compareTo(((Atom) obj).name) == 0;
+            return this == obj;
         }
 
         public String toString() {
-            return name;
+            return new String(val.array());
         }
     }
+
 
     public static class Time {
 
@@ -58,10 +84,17 @@ public class Bert {
     }
 
     public static class Tuple extends ArrayList<Object> {
+        public Tuple(int size) {
+            super(size);
+        }
     }
 
     public static class List extends ArrayList<Object> {
         public boolean isProper = true;
+
+        public List(int len) {
+            super(len);
+        }
     }
 
     public static class Dict extends HashMap<Object, Object> {
@@ -71,13 +104,13 @@ public class Bert {
     }
 
     private void writeAtom(Atom a, ByteArrayOutputStream bao) throws BertException {
-        int len = a.name.length();
+        int len = a.val.array().length;
         if (len >= 65536) throw new BertException("Atom Name too Long");
         bao.write(100);
         bao.write((byte) (len >> 8) & 0x00FF);
         bao.write((byte) (len) & 0x00FF);
         try {
-            bao.write(a.name.getBytes("ISO-8859-1"));
+            bao.write(a.val.array());
         } catch (UnsupportedEncodingException ex) {
             throw new BertException("ISO 8859-1 is not Supported at Your Java Environment");
         } catch (IOException ex) {
@@ -123,18 +156,15 @@ public class Bert {
     private void encodeTerm(Object o) throws BertException {
 
         if (o == null) {
-            Atom bert = new Atom("bert");
-            Atom nil = new Atom("nil");
-            Tuple tup = new Tuple();
-            tup.add(bert);
-            tup.add(nil);
+            Tuple tup = new Tuple(2);
+            tup.add(Atom.BERT);
+            tup.add(Atom.NIL);
             writeTuple(tup);
         } else if (o instanceof Boolean) {
-            Atom bert = new Atom("bert");
-            Atom nil = new Atom((boolean) o ? "true" : "false");
-            Tuple tup = new Tuple();
-            tup.add(bert);
-            tup.add(nil);
+            Atom bool = (boolean) o ? Atom.TRUE : Atom.FALSE;
+            Tuple tup = new Tuple(2);
+            tup.add(Atom.BERT);
+            tup.add(bool);
             writeTuple(tup);
         } else if (o instanceof Integer) {
             int value = (int) o;
@@ -196,9 +226,9 @@ public class Bert {
         } else if (o instanceof Time) {
             Time time = (Time) o;
 
-            Tuple tuple = new Tuple();
-            tuple.add(new Atom("bert"));
-            tuple.add(new Atom("time"));
+            Tuple tuple = new Tuple(5);
+            tuple.add(Atom.BERT);
+            tuple.add(Atom.TIME);
             tuple.add(time.megasecond);
             tuple.add(time.second);
             tuple.add(time.microsecond);
@@ -231,11 +261,11 @@ public class Bert {
     }
 
     private Object decodeBertTerm(Tuple t) throws BertException {
-        if (t.get(0) instanceof Atom && ((Atom) t.get(0)).name.compareTo("bert") == 0) {
+        if (t.get(0) instanceof Atom && ((Atom) t.get(0)) == Atom.BERT) {
             if (t.size() == 5) {
                 if (t.get(0) instanceof Atom && t.get(1) instanceof Atom &&
-                        ((Atom) t.get(0)).name.compareTo("bert") == 0 &&
-                        ((Atom) t.get(1)).name.compareTo("time") == 0 &&
+                        ((Atom) t.get(0)) == Atom.BERT &&
+                        ((Atom) t.get(1)) == Atom.TIME &&
                         t.get(2) instanceof Integer &&
                         t.get(3) instanceof Integer &&
                         t.get(4) instanceof Integer) {
@@ -250,18 +280,18 @@ public class Bert {
                     return time;
                 }
             } else if (t.size() == 2) {
-                String v = ((Atom) t.get(1)).name;
-                if (v.compareTo("nil") == 0) {
+                Atom v = ((Atom) t.get(1));
+                if (v == Atom.NIL) {
                     return null;
-                } else if (v.compareTo("true") == 0) {
+                } else if (v == Atom.TRUE) {
                     return true;
-                } else if (v.compareTo("false") == 0) {
+                } else if (v == Atom.FALSE) {
                     return false;
                 }
             } else if (t.size() == 3) {
                 if (t.get(0) instanceof Atom && t.get(1) instanceof Atom &&
-                        ((Atom) t.get(0)).name.compareTo("bert") == 0 &&
-                        ((Atom) t.get(1)).name.compareTo("dict") == 0 &&
+                        ((Atom) t.get(0)) == Atom.BERT &&
+                        ((Atom) t.get(1)) == Atom.DICT &&
                         t.get(2) instanceof List) {
                     Dict d = new Dict();
                     List l = (List) t.get(2);
@@ -284,7 +314,7 @@ public class Bert {
     private Object decodeSmallTuple() throws BertException {
         int len = mBuffer.get() & 0x00FFFFFFFF;
 
-        Tuple tuple = new Tuple();
+        Tuple tuple = new Tuple(len);
         for (int count = 0; count < len; count++) {
             tuple.add(decode());
         }
@@ -295,7 +325,7 @@ public class Bert {
     private Object decodeLargeTuple() throws BertException {
         int len = mBuffer.getInt() & 0x00FF;
 
-        Tuple tuple = new Tuple();
+        Tuple tuple = new Tuple(len);
         for (int count = 0; count < len; count++) {
             tuple.add(decode());
         }
@@ -306,7 +336,7 @@ public class Bert {
     public List decodeList() throws BertException {
         int len = mBuffer.getInt();
 
-        List list = new List();
+        List list = new List(len);
         for (int count = 0; count < len; count++) {
             list.add(decode());
         }
@@ -363,14 +393,14 @@ public class Bert {
                 len = mBuffer.getShort() & 0x00FFFF;
                 val = new byte[(int) len];
                 mBuffer.get(val);
-                Atom atom = new Atom(new String(val));
+                Atom atom = Atom.get(val);
                 return atom;
             case 104: // SmallTupleTag
                 return decodeSmallTuple();
             case 105: // LargeTupleTag
                 return decodeLargeTuple();
             case 106: // NilTag
-                return new List();
+                return new List(0);
             case 107: // StringTag
                 len = mBuffer.getShort() & 0x00FFFF;
                 val = new byte[(int) len];
