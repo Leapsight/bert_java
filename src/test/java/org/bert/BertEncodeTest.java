@@ -169,4 +169,6 @@ public class BertEncodeTest {
 		assert(Arrays.equals(data, output));
 	}
 
+
+
 }

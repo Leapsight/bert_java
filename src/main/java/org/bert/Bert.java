@@ -62,7 +62,6 @@ public class Bert {
         }
     }
 
-
     public static class Time {
 
         public Time() {
@@ -261,76 +260,72 @@ public class Bert {
     }
 
     private Object decodeBertTerm(Tuple t) throws BertException {
-        if (t.get(0) instanceof Atom && ((Atom) t.get(0)) == Atom.BERT) {
-            if (t.size() == 5) {
-                if (t.get(0) instanceof Atom && t.get(1) instanceof Atom &&
-                        ((Atom) t.get(0)) == Atom.BERT &&
-                        ((Atom) t.get(1)) == Atom.TIME &&
-                        t.get(2) instanceof Integer &&
-                        t.get(3) instanceof Integer &&
-                        t.get(4) instanceof Integer) {
+        if (t.get(1) == Atom.TIME &&
+                t.get(2) instanceof Integer &&
+                t.get(3) instanceof Integer &&
+                t.get(4) instanceof Integer) {
 
-                    Time time = new Time();
+            Time time = new Time();
 
-                    time.timestamp = ((int) t.get(2) * (long) 1000000 * (long) 1000) + ((int) t.get(3) * (long) 1000) + ((int) t.get(4) / 1000);
-                    time.megasecond = (int) t.get(2);
-                    time.second = (int) t.get(3);
-                    time.microsecond = (int) t.get(4);
+            time.timestamp = ((int) t.get(2) * (long) 1000000 * (long) 1000) + ((int) t.get(3) * (long) 1000) + ((int) t.get(4) / 1000);
+            time.megasecond = (int) t.get(2);
+            time.second = (int) t.get(3);
+            time.microsecond = (int) t.get(4);
 
-                    return time;
-                }
-            } else if (t.size() == 2) {
-                Atom v = ((Atom) t.get(1));
-                if (v == Atom.NIL) {
-                    return null;
-                } else if (v == Atom.TRUE) {
-                    return true;
-                } else if (v == Atom.FALSE) {
-                    return false;
-                }
-            } else if (t.size() == 3) {
-                if (t.get(0) instanceof Atom && t.get(1) instanceof Atom &&
-                        ((Atom) t.get(0)) == Atom.BERT &&
-                        ((Atom) t.get(1)) == Atom.DICT &&
-                        t.get(2) instanceof List) {
-                    Dict d = new Dict();
-                    List l = (List) t.get(2);
+            return time;
+        } else if (t.get(1) == Atom.NIL) {
+            return null;
+        } else if (t.get(1) == Atom.TRUE) {
+            return true;
+        } else if (t.get(1) == Atom.FALSE) {
+            return false;
+        } else if (t.get(1) == Atom.DICT) {
+            Dict d = new Dict();
+            List l = (List) t.get(2);
 
-                    for (int count = 0; count < l.size(); count++) {
-                        Tuple tup = (Tuple) l.get(count);
-                        if (tup.size() != 2)
-                            throw new BertException("Invalid Dict Entry");
-                        d.put(tup.get(0), tup.get(1));
-                    }
-
-                    return d;
-                }
+            for (int count = 0; count < l.size(); count++) {
+                Tuple tup = (Tuple) l.get(count);
+                if (tup.size() != 2)
+                    throw new BertException("Invalid Dict Entry");
+                d.put(tup.get(0), tup.get(1));
             }
+
+            return d;
         }
 
         return t;
     }
 
     private Object decodeSmallTuple() throws BertException {
-        int len = mBuffer.get() & 0x00FFFFFFFF;
+        int len = mBuffer.get(); // & 0x00FFFFFFFF;
 
-        Tuple tuple = new Tuple(len);
-        for (int count = 0; count < len; count++) {
-            tuple.add(decode());
+        Object tag = decode();
+        Object obj = RecordAssembler.create(tag, len);
+
+        for (int count = 1; count < len; count++) {
+            RecordAssembler.set(tag, count, obj, decode());
         }
 
-        return decodeBertTerm(tuple);
+        if (obj instanceof Tuple)
+            obj = decodeBertTerm((Tuple) obj);
+
+        return obj;
     }
 
     private Object decodeLargeTuple() throws BertException {
-        int len = mBuffer.getInt() & 0x00FF;
+        int len = mBuffer.getInt(); // & 0x00FF;
 
-        Tuple tuple = new Tuple(len);
-        for (int count = 0; count < len; count++) {
-            tuple.add(decode());
+        Object tag = decode();
+        Object obj = RecordAssembler.create(tag, len);
+
+        for (int count = 1; count < len; count++) {
+            RecordAssembler.set(tag, count, obj, decode());
         }
 
-        return decodeBertTerm(tuple);
+        if (tag instanceof Atom && tag == Atom.BERT)
+            obj = decodeBertTerm((Tuple) obj);
+
+        return obj;
     }
 
     public List decodeList() throws BertException {
@@ -356,16 +351,16 @@ public class Bert {
         BigInteger b = BigInteger.valueOf(256);
 
         if (tag == 110) // SMALL_BIG_EXT
-            len = mBuffer.get() & 0x00FF;
+            len = mBuffer.get(); // & 0x00FF;
         else // LARGE_BIG_EXT
             len = mBuffer.getInt();
 
-        int sign = mBuffer.get() == 0? 1 : -1;
+        int sign = mBuffer.get() == 0 ? 1 : -1;
 
         byte[] buffer = new byte[len];
         mBuffer.get(buffer);
 
-        for(int i = 0; i < buffer.length; i++) {
+        for (int i = 0; i < buffer.length; i++) {
             BigInteger d = BigInteger.valueOf(buffer[i] & 0x00FF);
             BigInteger p = b.pow(i);
             bigint = bigint.add(d.multiply(p));
@@ -375,7 +370,7 @@ public class Bert {
     }
 
     private Object decode() throws BertException {
-        int tag = mBuffer.get() & 0x00FF;
+        int tag = mBuffer.get(); // & 0x00FF;
         byte[] val = null;
         long len = 0;
 
@@ -390,7 +385,7 @@ public class Bert {
                 mBuffer.get(mFloatStr);
                 return Double.parseDouble(new String(mFloatStr));
             case 100: // AtomTag
-                len = mBuffer.getShort() & 0x00FFFF;
+                len = mBuffer.getShort(); // & 0x00FFFF;
                 val = new byte[(int) len];
                 mBuffer.get(val);
                 Atom atom = Atom.get(val);
@@ -402,7 +397,7 @@ public class Bert {
             case 106: // NilTag
                 return new List(0);
             case 107: // StringTag
-                len = mBuffer.getShort() & 0x00FFFF;
+                len = mBuffer.getShort(); // & 0x00FFFF;
                 val = new byte[(int) len];
                 mBuffer.get(val);
                 try {
@@ -413,7 +408,7 @@ public class Bert {
             case 108: // ListTag
                 return decodeList();
             case 109: // BinTag
-                len = mBuffer.getInt() & 0x00FFFFFFFF;
+                len = mBuffer.getInt(); // & 0x00FFFFFFFF;
                 val = new byte[(int) len];
                 mBuffer.get(val);
                 return val;
