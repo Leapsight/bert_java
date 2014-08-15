@@ -297,7 +297,7 @@ public class Bert {
     }
 
     private Object decodeSmallTuple() throws BertException {
-        int len = mBuffer.get(); // & 0x00FFFFFFFF;
+        int len = mBuffer.get() & 0x00FF; // & 0x00FFFFFFFF;
 
         Object tag = decode();
         Object obj = RecordAssembler.create(tag, len);
@@ -351,7 +351,7 @@ public class Bert {
         BigInteger b = BigInteger.valueOf(256);
 
         if (tag == 110) // SMALL_BIG_EXT
-            len = mBuffer.get(); // & 0x00FF;
+            len = mBuffer.get() & 0x00FF;
         else // LARGE_BIG_EXT
             len = mBuffer.getInt();
 
@@ -370,7 +370,7 @@ public class Bert {
     }
 
     private Object decode() throws BertException {
-        int tag = mBuffer.get(); // & 0x00FF;
+        int tag = mBuffer.get() & 0x00FF;
         byte[] val = null;
         long len = 0;
 
