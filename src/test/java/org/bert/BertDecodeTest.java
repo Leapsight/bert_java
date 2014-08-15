@@ -244,7 +244,7 @@ public class BertDecodeTest {
     @Test
     public void testSmallRecord() throws BertException {
         Bert.Atom point = Bert.Atom.get("point");
-        RecordAssembler.register(point, Point.class, new String[] {"x", "y"});
+        RecordRegistry.register(point, Point.class, new String[]{"x", "y"});
 
         // {point, 1, 2}
         byte[] data = {(byte) 131,104,3,100,0,5,112,111,105,110,116,97,1,97,2};
@@ -262,7 +262,7 @@ public class BertDecodeTest {
     @Test
     public void testLargeRecord() throws BertException {
         Bert.Atom point = Bert.Atom.get("point");
-        RecordAssembler.register(point, Point.class, new String[] {"x", "y"});
+        RecordRegistry.register(point, Point.class, new String[]{"x", "y"});
 
         // {point, 1, 2}
         byte[] data = {(byte) 131,105,0,0,0,3,100,0,5,112,111,105,110,116,97,1,97,2};

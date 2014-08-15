@@ -8,12 +8,14 @@ import java.util.HashMap;
  *
  * Created by frepond on 14/8/14.
  */
-public class RecordAssembler {
+public class RecordRegistry {
     private final static HashMap<Bert.Atom, Class> RECORD_REGISTRY = new HashMap<>();
+    private final static HashMap<Class, Bert.Atom> CLASS_REGISTRY = new HashMap<>();
     private final static HashMap<Bert.Atom, Field[]> RECORD_ATTRIBUTES = new HashMap<>();
 
     public final static void register(Bert.Atom atom, Class clazz, String[] attrs) {
         RECORD_REGISTRY.put(atom, clazz);
+        CLASS_REGISTRY.put(clazz, atom);
         Field[] methods = new Field[attrs.length];
 
         for(int i = 0; i < attrs.length; i++) {

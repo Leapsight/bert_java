@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 public class Bert {
+    // TODO see if Bert object could be reused from call to call by clearing buffers
     private byte[] mFloatStr = new byte[31];
     private ByteBuffer mBuffer = null;
     private ByteArrayOutputStream bao = null;
@@ -300,10 +301,10 @@ public class Bert {
         int len = mBuffer.get() & 0x00FF; // & 0x00FFFFFFFF;
 
         Object tag = decode();
-        Object obj = RecordAssembler.create(tag, len);
+        Object obj = RecordRegistry.create(tag, len);
 
         for (int count = 1; count < len; count++) {
-            RecordAssembler.set(tag, count, obj, decode());
+            RecordRegistry.set(tag, count, obj, decode());
         }
 
         if (obj instanceof Tuple)
@@ -316,10 +317,10 @@ public class Bert {
         int len = mBuffer.getInt(); // & 0x00FF;
 
         Object tag = decode();
-        Object obj = RecordAssembler.create(tag, len);
+        Object obj = RecordRegistry.create(tag, len);
 
         for (int count = 1; count < len; count++) {
-            RecordAssembler.set(tag, count, obj, decode());
+            RecordRegistry.set(tag, count, obj, decode());
         }
 
         if (tag instanceof Atom && tag == Atom.BERT)
