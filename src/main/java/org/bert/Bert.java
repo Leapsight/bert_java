@@ -1,13 +1,13 @@
 package org.bert;
 
+import org.bert.types.*;
+
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
-import java.util.ArrayList;
-import java.util.HashMap;
 
 public class Bert {
     // TODO see if Bert object could be reused from call to call by clearing buffers
@@ -15,90 +15,6 @@ public class Bert {
     private ByteBuffer mBuffer = null;
     private ByteArrayOutputStream bao = null;
     private Object mValue = null;
-
-    public static class Atom {
-        private static HashMap<ByteBuffer, Atom> atomTable = new HashMap<>();
-
-        public static Atom get(byte[] val) {
-            ByteBuffer bytes = ByteBuffer.wrap(val);
-            Atom atom = atomTable.get(bytes);
-
-            if (atom == null) {
-                atom = new Atom(bytes);
-                atomTable.put(bytes, atom);
-            }
-
-            return atom;
-        }
-
-        public static Atom get(String name) {
-            return get(name.getBytes());
-        }
-
-        // predefined Atoms
-        public static Atom BERT = Atom.get("bert");
-        public static Atom TIME = Atom.get("time");
-        public static Atom TRUE = Atom.get("true");
-        public static Atom FALSE = Atom.get("false");
-        public static Atom NIL = Atom.get("nil");
-        public static Atom DICT = Atom.get("dict");
-
-        public final ByteBuffer val;
-
-        private Atom(ByteBuffer val) {
-            this.val = val;
-        }
-
-        public int hashCode() {
-            return val.hashCode();
-        }
-
-        public boolean equals(Object obj) {
-            if (!(obj instanceof Atom)) return false;
-            return this == obj;
-        }
-
-        public String toString() {
-            return new String(val.array());
-        }
-    }
-
-    public static class Time {
-
-        public Time() {
-        }
-
-        public Time(long ts) {
-            timestamp = ts;
-
-            microsecond = (int) ((ts % 1000) * 1000);
-            second = (int) ((ts / 1000) % 1000000);
-            megasecond = (int) ((ts / 1000) / 1000000);
-        }
-
-        public long timestamp = 0;
-
-        public int megasecond = 0;
-        public int second = 0;
-        public int microsecond = 0;
-    }
-
-    public static class Tuple extends ArrayList<Object> {
-        public Tuple(int size) {
-            super(size);
-        }
-    }
-
-    public static class List extends ArrayList<Object> {
-        public boolean isProper = true;
-
-        public List(int len) {
-            super(len);
-        }
-    }
-
-    public static class Dict extends HashMap<Object, Object> {
-    }
 
     public Bert() {
     }
@@ -157,14 +73,14 @@ public class Bert {
 
         if (o == null) {
             Tuple tup = new Tuple(2);
-            tup.add(Atom.BERT);
-            tup.add(Atom.NIL);
+            tup.put(0, Atom.BERT);
+            tup.put(1, Atom.NIL);
             writeTuple(tup);
         } else if (o instanceof Boolean) {
             Atom bool = (boolean) o ? Atom.TRUE : Atom.FALSE;
             Tuple tup = new Tuple(2);
-            tup.add(Atom.BERT);
-            tup.add(bool);
+            tup.put(0, Atom.BERT);
+            tup.put(1, bool);
             writeTuple(tup);
         } else if (o instanceof Integer) {
             int value = (int) o;
@@ -193,7 +109,10 @@ public class Bert {
         } else if (o instanceof List) {
             List list = (List) o;
             if (list.size() == 0) {
-                bao.write(106);
+                Tuple tup = new Tuple(2);
+                tup.put(0, Atom.BERT);
+                tup.put(1, Atom.NIL);
+                writeTuple(tup);
             } else {
                 writeList((List) o);
             }
@@ -227,11 +146,11 @@ public class Bert {
             Time time = (Time) o;
 
             Tuple tuple = new Tuple(5);
-            tuple.add(Atom.BERT);
-            tuple.add(Atom.TIME);
-            tuple.add(time.megasecond);
-            tuple.add(time.second);
-            tuple.add(time.microsecond);
+            tuple.put(0, Atom.BERT);
+            tuple.put(1, Atom.TIME);
+            tuple.put(2, time.megasecond);
+            tuple.put(3, time.second);
+            tuple.put(4, time.microsecond);
 
             writeTuple(tuple);
         } else if (o instanceof Tuple) {
@@ -290,7 +209,10 @@ public class Bert {
                 Tuple tup = (Tuple) l.get(count);
                 if (tup.size() != 2)
                     throw new BertException("Invalid Dict Entry");
-                d.put(tup.get(0), tup.get(1));
+                if (tup.get(0) instanceof byte[])
+                    d.put(new String((byte[]) tup.get(0)), tup.get(1));
+                else
+                    d.put(tup.get(0), tup.get(1));
             }
 
             return d;

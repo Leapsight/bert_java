@@ -1,20 +1,21 @@
 package org.bert;
 
-import org.bert.Bert.Atom;
+import org.bert.types.Atom;
+import org.bert.types.List;
+import org.bert.types.Time;
+import org.bert.types.Tuple;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.*;
 
 @RunWith(JUnit4.class)
 public class BertEncodeTest {
 
 	@Test
 	public void encodeAtom() throws BertException {
-		Bert.Atom atom = Bert.Atom.get("demo");
+		Atom atom = Atom.get("demo");
 		Bert bert = new Bert();
 
 		byte[] data = bert.encode(atom);
@@ -70,9 +71,9 @@ public class BertEncodeTest {
 	@Test
 	public void encodeErlangNil() throws BertException {
 		Bert bert = new Bert();
-		byte[] data = bert.encode(new Bert.List(0));
+		byte[] data = bert.encode(new List(0));
 
-		byte[] nil = { (byte) 131, 106 };
+		byte[] nil = { (byte) 131,104,2,100,0,4,98,101,114,116,100,0,3,110,105,108 };
         assertArrayEquals(data, nil);
 	}
 
@@ -98,12 +99,12 @@ public class BertEncodeTest {
 	@Test
 	public void encodeTuple() throws BertException {
 		Bert bert = new Bert();
-		Bert.Tuple tuple = new Bert.Tuple(3);
-		tuple.add(Atom.get("demo"));
+		Tuple tuple = new Tuple(4);
+		tuple.put(0, Atom.get("demo"));
 		byte[] five = { 5 };
-		tuple.add(five);
-		tuple.add("a");
-		tuple.add(1);
+		tuple.put(1, five);
+		tuple.put(2, "a");
+		tuple.put(3, 1);
 		byte[] data = bert.encode(tuple);
 
         byte[] output = { (byte) 131, 104, 4, 100, 0, 4, 100, 101, 109, 111, 109, 0, 0, 0, 1, 5, 107, 0, 1, 97, 97, 1 };
@@ -113,7 +114,7 @@ public class BertEncodeTest {
 	@Test
 	public void encodeList() throws BertException {
 		Bert bert = new Bert();
-		Bert.List list = new Bert.List(4);
+		List list = new List(4);
 		list.add(Atom.get("test"));
 		list.add(1);
 		list.add("a");
@@ -129,15 +130,15 @@ public class BertEncodeTest {
 	@Test
 	public void encodeComplex() throws BertException, java.io.UnsupportedEncodingException {
 		Bert bert = new Bert();
-		Bert.List list = new Bert.List(2);
+		List list = new List(2);
 
-		Bert.Tuple user = new Bert.Tuple(2);
-		user.add(Atom.get("user"));
-		user.add("demo".getBytes("UTF-8"));
+		Tuple user = new Tuple(2);
+		user.put(0, Atom.get("user"));
+		user.put(1, "demo".getBytes("UTF-8"));
 
-		Bert.Tuple pass= new Bert.Tuple(2);
-		pass.add(Atom.get("pass"));
-		pass.add("12346".getBytes("UTF-8"));
+		Tuple pass= new Tuple(2);
+		pass.put(0, Atom.get("pass"));
+		pass.put(1, "12346".getBytes("UTF-8"));
 
 		list.add(user);
 		list.add(pass);
@@ -155,7 +156,7 @@ public class BertEncodeTest {
 	public void encodeBertTime() throws BertException {
 		Bert bert = new Bert();
 
-		Bert.Time time = new Bert.Time(1396519216811L);
+		Time time = new Time(1396519216811L);
 
 		assertEquals(time.megasecond, 1396);
 		assertEquals(time.second, 519216);
@@ -171,7 +172,7 @@ public class BertEncodeTest {
 
     @Test
     public void encodeRecord() throws BertException {
-        Bert.Atom point = Bert.Atom.get("point");
+        Atom point = Atom.get("point");
         RecordRegistry.register(point, Point.class, new String[]{"x", "y"});
         Bert bert = new Bert();
         Point p = new Point();
@@ -187,7 +188,7 @@ public class BertEncodeTest {
 
     @Test
     public void encodeWildcard() throws BertException {
-        Bert.Atom wildcard = Atom.get("_");
+        Atom wildcard = Atom.get("_");
         Bert bert = new Bert();
 
         byte[] data = bert.encode(wildcard);
@@ -198,12 +199,12 @@ public class BertEncodeTest {
 
     @Test
     public void encodeEmptyList() throws BertException {
-        Bert.List empty = new Bert.List(0);
+        List empty = new List(0);
         Bert bert = new Bert();
 
         byte[] data = bert.encode(empty);
 
-        byte[] output = new byte[] {(byte) 131, 106};
+        byte[] output = new byte[] {(byte) 131,104,2,100,0,4,98,101,114,116,100,0,3,110,105,108};
         assertArrayEquals(data, output);
     }
 
