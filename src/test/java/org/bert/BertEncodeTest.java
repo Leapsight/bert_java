@@ -5,9 +5,9 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
-import java.util.Arrays;
-
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 @RunWith(JUnit4.class)
 public class BertEncodeTest {
@@ -19,43 +19,43 @@ public class BertEncodeTest {
 
 		byte[] data = bert.encode(atom);
 
-		assert(data != null);
+		assertNotNull(data);
 
 		byte[] erlang = { (byte) 131, 100, 0, 4, 100, 101, 109, 111 };
 
-		assert(Arrays.equals(data, erlang));
+        assertArrayEquals(data, erlang);
 	}
 
 	@Test
 	public void encodeBertTerm() throws BertException {
 		Bert bert = new Bert();
 		byte[] data = bert.encode(null);
-		assert(data != null);
+		assertNotNull(data);
 
 		byte[] n = { (byte) 131, 104, 2, 100, 0, 4, 98, 101, 114, 116, 100, 0, 3, 110, 105, 108 };
-		assert(Arrays.equals(data, n));
+        assertArrayEquals(data, n);
 
 		data = bert.encode(true);
 		byte[] t = { (byte) 131, 104, 2, 100, 0, 4, 98, 101, 114, 116, 100, 0, 4, 116, 114, 117, 101 };
-		assert(Arrays.equals(data, t));
+        assertArrayEquals(data, t);
 
 		data = bert.encode(false);
 		byte[] f = { (byte) 131, 104, 2, 100, 0, 4, 98, 101, 114, 116, 100, 0, 5, 102, 97, 108, 115, 101 };
-		assert(Arrays.equals(data, f));
+        assertArrayEquals(data, f);
 	}
 
 	@Test
 	public void encodeInt() throws BertException {
 		Bert bert = new Bert();
 		byte[] data = bert.encode(255);
-		assert(data != null);
+		assertNotNull(data);
 
 		byte[] small = { (byte) 131, (byte) 97, (byte) -1};
-		assert(Arrays.equals(data, small));
+        assertArrayEquals(data, small);
 
 		byte[] intv = { (byte) 131, (byte) 98, (byte) 255, (byte) 255, (byte) 255, (byte) 133 };
 		data = bert.encode(-123);
-		assert(Arrays.equals(data, intv));
+        assertArrayEquals(data, intv);
 	}
 	
 	@Test
@@ -64,7 +64,7 @@ public class BertEncodeTest {
 		byte[] data = bert.encode(-1.23);
 
 		byte[] fval = { (byte) 131, 99, 45, 49, 44, 50, 51, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 101, 43, 48, 48, 0, 0, 0, 0 };
-		assert(Arrays.equals(data, fval));
+        assertArrayEquals(data, fval);
 	}
 
 	@Test
@@ -73,7 +73,7 @@ public class BertEncodeTest {
 		byte[] data = bert.encode(new Bert.List(0));
 
 		byte[] nil = { (byte) 131, 106 };
-		assert(Arrays.equals(data, nil));
+        assertArrayEquals(data, nil);
 	}
 
 	@Test
@@ -82,7 +82,7 @@ public class BertEncodeTest {
 		byte[] data = bert.encode("abc");
 
 		byte[] abc = { (byte) 131, 107, 0, 3, 'a', 'b', 'c' };
-		assert(Arrays.equals(data, abc));
+        assertArrayEquals(data, abc);
 	}
 
 	@Test
@@ -92,7 +92,7 @@ public class BertEncodeTest {
 		byte[] data = bert.encode(abc);
 
 		byte[] output = { (byte) 131, 109, 0, 0, 0, 3, 'a', 'b', 'c' };
-		assert(Arrays.equals(data, output));
+        assertArrayEquals(data, output);
 	}
 
 	@Test
@@ -105,9 +105,9 @@ public class BertEncodeTest {
 		tuple.add("a");
 		tuple.add(1);
 		byte[] data = bert.encode(tuple);
-		
-		byte[] output = { (byte) 131, 104, 4, 100, 0, 4, 100, 101, 109, 111, 109, 0, 0, 0, 1, 5, 107, 0, 1, 97, 97, 1 };
-		assert(Arrays.equals(data, output));
+
+        byte[] output = { (byte) 131, 104, 4, 100, 0, 4, 100, 101, 109, 111, 109, 0, 0, 0, 1, 5, 107, 0, 1, 97, 97, 1 };
+        assertArrayEquals(data, output);
 	}
 
 	@Test
@@ -123,7 +123,7 @@ public class BertEncodeTest {
 		byte[] data = bert.encode(list);
 		
 		byte[] output = { (byte) 131, 108, 0, 0, 0, 4, 100, 0, 4, 116, 101, 115, 116, 97, 1, 107, 0, 1, 97, 109, 0, 0, 0, 1, 5, 106 };
-		assert(Arrays.equals(data, output));
+        assertArrayEquals(data, output);
 	}
 
 	@Test
@@ -148,7 +148,7 @@ public class BertEncodeTest {
 						  112, 97, 115, 115, 109, 0, 0, 0, 5, 49, 50, 51, 52, 54, 106 };
 		assertEquals(data.length, output.length);
 
-		assert(Arrays.equals(data, output));
+		assertArrayEquals(data, output);
 	}
 
 	@Test
@@ -166,9 +166,45 @@ public class BertEncodeTest {
 						  (byte) 236, 48, 98, 0, 12, 95, (byte) 248 };
 
 		byte[] data = bert.encode(time);
-		assert(Arrays.equals(data, output));
+        assertArrayEquals(data, output);
 	}
 
+    @Test
+    public void encodeRecord() throws BertException {
+        Bert.Atom point = Bert.Atom.get("point");
+        RecordRegistry.register(point, Point.class, new String[]{"x", "y"});
+        Bert bert = new Bert();
+        Point p = new Point();
 
+        p.setX(1);
+        p.setY(2);
+
+        byte[] data = bert.encode(p);
+
+        byte[] output = {(byte) 131,104,3,100,0,5,112,111,105,110,116,97,1,97,2};
+        assertArrayEquals(data, output);
+    }
+
+    @Test
+    public void encodeWildcard() throws BertException {
+        Bert.Atom wildcard = Atom.get("_");
+        Bert bert = new Bert();
+
+        byte[] data = bert.encode(wildcard);
+
+        byte[] output = new byte[] {(byte) 131,100,0,1,95};
+        assertArrayEquals(data, output);
+    }
+
+    @Test
+    public void encodeEmptyList() throws BertException {
+        Bert.List empty = new Bert.List(0);
+        Bert bert = new Bert();
+
+        byte[] data = bert.encode(empty);
+
+        byte[] output = new byte[] {(byte) 131, 106};
+        assertArrayEquals(data, output);
+    }
 
 }

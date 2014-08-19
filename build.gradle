@@ -11,7 +11,6 @@ configurations { providedCompile }
 dependencies {
     compile 'commons-beanutils:commons-beanutils:1.9.2'
     compile group: 'commons-collections', name: 'commons-collections', version: '3.2'
-    compile 'org.slf4j:slf4j-api:1.7.5'
 
     providedCompile "org.projectlombok:lombok:1.14.4"
 

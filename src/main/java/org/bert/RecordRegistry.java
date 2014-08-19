@@ -1,6 +1,6 @@
 package org.bert;
 
-import lombok.extern.slf4j.Slf4j;
+import lombok.extern.java.Log;
 
 import java.lang.reflect.Field;
 import java.util.HashMap;
@@ -10,7 +10,7 @@ import java.util.HashMap;
  *
  * Created by frepond on 14/8/14.
  */
-@Slf4j
+@Log
 public class RecordRegistry {
     private final static HashMap<Bert.Atom, Class> RECORD_REGISTRY = new HashMap<>();
     private final static HashMap<Class, Bert.Atom> CLASS_REGISTRY = new HashMap<>();
@@ -26,7 +26,7 @@ public class RecordRegistry {
                 methods[i] = clazz.getDeclaredField(attrs[i]);
                 methods[i].setAccessible(true);
             } catch(Exception e) {
-                log.error("Error registering class " + clazz, e);
+                log.warning("Error registering " + clazz + "." + attrs[i]);
             }
 
             RECORD_ATTRIBUTES.put(atom, methods);
@@ -60,11 +60,36 @@ public class RecordRegistry {
             try {
                 RECORD_ATTRIBUTES.get(tag)[index - 1].set(obj, val);
             } catch(Exception e) {
-                log.error("Error setting attribute " + RECORD_ATTRIBUTES.get(tag)[index - 1] +
-                        " on "+ obj.getClass(), e);
+                log.warning("Error setting attribute " + RECORD_ATTRIBUTES.get(tag)[index - 1] +
+                        " on " + obj.getClass());
             }
         }
 
         return obj;
+    }
+
+    public final static Bert.Tuple toTuple(Object obj) throws BertException {
+        if (obj instanceof Bert.Tuple)
+            return (Bert.Tuple) obj;
+
+        Bert.Atom tag = CLASS_REGISTRY.get(obj.getClass());
+        Field[] attrs = RECORD_ATTRIBUTES.get(tag);
+
+        if (attrs == null)
+            throw new BertException("Not registered " + obj.getClass());
+
+        Bert.Tuple tuple = new Bert.Tuple(attrs.length + 1);
+
+        tuple.add(tag);
+
+        for (int i = 0; i < attrs.length; i++)
+            try {
+                tuple.add(attrs[i].get(obj));
+            } catch(Exception e) {
+                log.warning("Error setting attribute " + RECORD_ATTRIBUTES.get(tag)[i] +
+                        " on " + obj.getClass());
+            }
+
+        return tuple;
     }
 }

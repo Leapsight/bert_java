@@ -236,6 +236,8 @@ public class Bert {
             writeTuple(tuple);
         } else if (o instanceof Tuple) {
             writeTuple((Tuple) o);
+        } else  {
+            writeTuple(RecordRegistry.toTuple(o));
         }
 
     }
@@ -307,7 +309,7 @@ public class Bert {
             RecordRegistry.set(tag, count, obj, decode());
         }
 
-        if (obj instanceof Tuple)
+        if (tag instanceof Atom && tag == Atom.BERT)
             obj = decodeBertTerm((Tuple) obj);
 
         return obj;

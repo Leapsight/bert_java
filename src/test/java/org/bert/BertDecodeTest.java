@@ -5,11 +5,9 @@ import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
 import java.math.BigInteger;
-import java.util.Arrays;
 import java.util.Date;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.*;
 
 @RunWith(JUnit4.class)
 public class BertDecodeTest {
@@ -56,7 +54,7 @@ public class BertDecodeTest {
         byte[] data = {(byte) 131, 100, 0, 4, 116, 101, 115, 116};
         Bert bert = new Bert(data);
         Object o = bert.getValue();
-        assertEquals(((Bert.Atom) o).toString(), "test");
+        assertEquals(o.toString(), "test");
     }
 
     @Test
@@ -64,7 +62,7 @@ public class BertDecodeTest {
         byte[] data = {(byte) 131, 107, 0, 3, 97, 98, 99};
         Bert bert = new Bert(data);
         Object o = bert.getValue();
-        assertEquals((String) o, "abc");
+        assertEquals(o, "abc");
     }
 
     @Test
@@ -73,7 +71,7 @@ public class BertDecodeTest {
         byte[] verify = {'a', 'b', 'c'};
         Bert bert = new Bert(data);
         Object o = bert.getValue();
-        assert (Arrays.equals(verify, (byte[]) o));
+        assertArrayEquals(verify, (byte[]) o);
     }
 
     @Test
@@ -81,15 +79,15 @@ public class BertDecodeTest {
         byte[] data = {(byte) 131, 104, 3, 100, 0, 1, 97, 100, 0, 1, 98, 100, 0, 1, 99};
         Bert bert = new Bert(data);
         Object o = bert.getValue();
-        assert (o instanceof Bert.Tuple);
+        assertTrue(o instanceof Bert.Tuple);
         Bert.Tuple l = (Bert.Tuple) o;
         assertEquals(l.size(), 3);
-        assert (l.get(0) instanceof Bert.Atom);
-        assert (l.get(1) instanceof Bert.Atom);
-        assert (l.get(2) instanceof Bert.Atom);
-        assertEquals(((Bert.Atom) l.get(0)).toString(), "a");
-        assertEquals(((Bert.Atom) l.get(1)).toString(), "b");
-        assertEquals(((Bert.Atom) l.get(2)).toString(), "c");
+        assertTrue(l.get(0) instanceof Bert.Atom);
+        assertTrue(l.get(1) instanceof Bert.Atom);
+        assertTrue(l.get(2) instanceof Bert.Atom);
+        assertEquals(l.get(0).toString(), "a");
+        assertEquals(l.get(1).toString(), "b");
+        assertEquals(l.get(2).toString(), "c");
     }
 
     @Test
@@ -100,12 +98,12 @@ public class BertDecodeTest {
         assert (o instanceof Bert.Tuple);
         Bert.Tuple l = (Bert.Tuple) o;
         assertEquals(l.size(), 3);
-        assert (l.get(0) instanceof Bert.Atom);
-        assert (l.get(1) instanceof Bert.Atom);
-        assert (l.get(2) instanceof Bert.Atom);
-        assertEquals(((Bert.Atom) l.get(0)).toString(), "a");
-        assertEquals(((Bert.Atom) l.get(1)).toString(), "b");
-        assertEquals(((Bert.Atom) l.get(2)).toString(), "c");
+        assertTrue(l.get(0) instanceof Bert.Atom);
+        assertTrue(l.get(1) instanceof Bert.Atom);
+        assertTrue(l.get(2) instanceof Bert.Atom);
+        assertEquals(l.get(0).toString(), "a");
+        assertEquals(l.get(1).toString(), "b");
+        assertEquals(l.get(2).toString(), "c");
     }
 
     @Test
@@ -113,16 +111,16 @@ public class BertDecodeTest {
         byte[] data = {(byte) 131, 108, 0, 0, 0, 3, 100, 0, 1, 97, 100, 0, 1, 98, 100, 0, 1, 99, 106};
         Bert bert = new Bert(data);
         Object o = bert.getValue();
-        assert (o instanceof Bert.List);
+        assertTrue(o instanceof Bert.List);
 
         Bert.List l = (Bert.List) o;
         assertEquals(l.size(), 3);
-        assert (l.get(0) instanceof Bert.Atom);
-        assert (l.get(1) instanceof Bert.Atom);
-        assert (l.get(2) instanceof Bert.Atom);
-        assertEquals(((Bert.Atom) l.get(0)).toString(), "a");
-        assertEquals(((Bert.Atom) l.get(1)).toString(), "b");
-        assertEquals(((Bert.Atom) l.get(2)).toString(), "c");
+        assertTrue(l.get(0) instanceof Bert.Atom);
+        assertTrue(l.get(1) instanceof Bert.Atom);
+        assertTrue(l.get(2) instanceof Bert.Atom);
+        assertEquals(l.get(0).toString(), "a");
+        assertEquals(l.get(1).toString(), "b");
+        assertEquals(l.get(2).toString(), "c");
 
         assert (l.isProper);
     }
@@ -132,20 +130,20 @@ public class BertDecodeTest {
         byte[] data = {(byte) 131, 108, 0, 0, 0, 3, 100, 0, 1, 97, 100, 0, 1, 98, 100, 0, 1, 99, 100, 0, 1, 100};
         Bert bert = new Bert(data);
         Object o = bert.getValue();
-        assert (o instanceof Bert.List);
+        assertTrue(o instanceof Bert.List);
 
         Bert.List l = (Bert.List) o;
         assertEquals(l.size(), 4);
-        assert (l.get(0) instanceof Bert.Atom);
-        assert (l.get(1) instanceof Bert.Atom);
-        assert (l.get(2) instanceof Bert.Atom);
-        assert (l.get(3) instanceof Bert.Atom);
-        assertEquals(((Bert.Atom) l.get(0)).toString(), "a");
-        assertEquals(((Bert.Atom) l.get(1)).toString(), "b");
-        assertEquals(((Bert.Atom) l.get(2)).toString(), "c");
-        assertEquals(((Bert.Atom) l.get(3)).toString(), "d");
+        assertTrue(l.get(0) instanceof Bert.Atom);
+        assertTrue(l.get(1) instanceof Bert.Atom);
+        assertTrue(l.get(2) instanceof Bert.Atom);
+        assertTrue(l.get(3) instanceof Bert.Atom);
+        assertEquals(l.get(0).toString(), "a");
+        assertEquals(l.get(1).toString(), "b");
+        assertEquals(l.get(2).toString(), "c");
+        assertEquals(l.get(3).toString(), "d");
 
-        assert (!l.isProper);
+        assertFalse(l.isProper);
     }
 
     @Test
@@ -154,7 +152,7 @@ public class BertDecodeTest {
         Bert bert = new Bert(data);
         Object o = bert.getValue();
 
-        assert (o instanceof Bert.Time);
+        assertTrue(o instanceof Bert.Time);
 
         Bert.Time btime = (Bert.Time) o;
 
@@ -183,11 +181,11 @@ public class BertDecodeTest {
 
         byte[] f = {(byte) 131, 104, 2, 100, 0, 4, 98, 101, 114, 116, 100, 0, 5, 102, 97, 108, 115, 101};
         Bert bertf = new Bert(f);
-        assert (!((boolean) bertf.getValue()));
+        assertFalse((boolean) bertf.getValue());
 
         byte[] n = {(byte) 131, 104, 2, 100, 0, 4, 98, 101, 114, 116, 100, 0, 3, 110, 105, 108};
         Bert bertn = new Bert(n);
-        assertEquals(bertn.getValue(), null);
+        assertNull(bertn.getValue());
     }
 
     @Test
@@ -198,7 +196,7 @@ public class BertDecodeTest {
         Bert bert = new Bert(data);
         Object o = bert.getValue();
 
-        assert (o instanceof Bert.Dict);
+        assertTrue(o instanceof Bert.Dict);
 
         Bert.Atom name = Bert.Atom.get("name");
 
@@ -206,14 +204,14 @@ public class BertDecodeTest {
 
         Bert.Dict d = (Bert.Dict) o;
         assertEquals(d.size(), 2);
-        assert (d.containsKey(name));
-        assert (d.containsKey(age));
+        assertTrue(d.containsKey(name));
+        assertTrue(d.containsKey(age));
 
         byte[] tom = {'T', 'o', 'm'};
         Bert.List l = (Bert.List) d.get(name);
         assertEquals(l.size(), 1);
-        assert (l.get(0) instanceof byte[]);
-        assert (Arrays.equals((byte[]) l.get(0), (byte[]) tom));
+        assertTrue(l.get(0) instanceof byte[]);
+        assertArrayEquals((byte[]) l.get(0), (byte[]) tom);
 
         String l0 = (String) d.get(age);
         assertEquals(l0.length(), 1);
@@ -251,7 +249,7 @@ public class BertDecodeTest {
         Bert bert = new Bert(data);
         Object o = bert.getValue();
 
-        assert (o instanceof Point);
+        assertTrue(o instanceof Point);
 
         Point p = (Point) o;
 
@@ -269,7 +267,7 @@ public class BertDecodeTest {
         Bert bert = new Bert(data);
         Object o = bert.getValue();
 
-        assert (o instanceof Point);
+        assertTrue(o instanceof Point);
 
         Point p = (Point) o;
 
@@ -287,5 +285,17 @@ public class BertDecodeTest {
         long end = System.currentTimeMillis();
 
         System.out.println("Time: " + (end - start) + "ms");
+    }
+
+    @Test
+    public void testDecodeTuple1() throws BertException {
+        byte[] data = {(byte) 131,108,0,0,0,1,104,1,100,0,9,108,115,100,95,116,117,112,108,101,106};
+
+        Bert bert = new Bert(data);
+        Object o = bert.getValue();
+
+        assertTrue(o instanceof Bert.List);
+        assertEquals(((Bert.List) o).size(), 1);
+        assertEquals(Bert.Atom.get("lsd_tuple"), ((Bert.Tuple)((Bert.List) o).get(0)).get(0 ));
     }
 }
